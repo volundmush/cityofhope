@@ -1,0 +1,28 @@
+@skip isdbref(tag(setr(1,shift)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Shift Code,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
+
+&META_AUTHOR #4283=Sponge/#4
+&META_PURPOSE #4283=Manage Shifter renown
+&META_UPDATED_BY #4283=Sponge/#4
+&DATA_DB #4283=#4253
+@Startup #4283=@drain me;@notify me;&SEM_RENADJUST me=-1;&SEM_RENAWARD me=-1
+&LIST_RENOWN #4283=CHIE COURAGE CUNNING FEROCITY GLORY HARMONY HONOR HUMOR INFAMY INNOVATION KAGAYAKI OBEDIENCE OBLIGATION POWER SUCCOR TOKU VALOR WISDOM
+&UFUN_WHAT_RENOWN #4283=setinter(iter(u(#14/UFUN_DBLATTR,%0,DATA_TEMP_*),after(##,DATA_TEMP_)),v(LIST_RENOWN))
+&CMND_RENOWN #4283=$+renown *:@switch [t(setr(0,whois(%0)))][cor(strmatch(%q0,%#),hasauthority(%#,VIEWSTATS))]=0,@pemit %#=[errstr()] [pcol(I can't identify)] [argcol(%0)],10*,@pemit %#=[errstr()] [pcol(To view others' renown you need the authority)] [argcol(VIEWSTATS)].,11,@pemit %#=[header(Renown For [argcol(name(%q0))])]%r[column(iter(setr(1,u(UFUN_WHAT_RENOWN,%q0)) [iter(%q1,TEMP_##)],u(#14/UFUN_FMT_NUM_STAT,%q0,##,2,22),%b,|),24,|,2)][footer()]
+&CMND_RENOWN_NOARGS #4283=$+renown:@force %#=+renown %#
+&UFUN_FMT_AWARD #4283=[subheader(before(setr(0,get(v(DATA_DB)/%0)),|))]%r%b%b[argcol(convsecs(extract(%0,4,1,_)))] [pcol(by [moniker(extract(%q0,2,1,|))])]%r%b%b[wrap(last(%q0,|),76,,%b,,,%r,75)]
+&CMND_RENOWN_LOG #4283=$+renown/log *:@switch 1=[strmatch(%0,*/*)],{@force %#=+renown/plog [escape(%0)]},[isint(%0)],{@force %#=+renown/plog %#/[escape(%0)]},{@force %#=+renown/plog [escape(%0)]/[v(DATA_DEFAULT_RENOWN_LOG_DAYS)]}
+&CMND_RENOWN_LOG_NOARGS #4283=$+renown/log:@force %#=+renown/log %#
+&CMND_RENOWN_AWARD #4283=$+renown/award */*=*/*:@switch [t(setr(0,whois(%0)))][hasauthority(%#,SETSTATS)][t(member(u(UFUN_WHAT_RENOWN,%q0),ucstr(%1)))][setq(P,u(#14/UFUN_GET_BASE_STAT,%q0,%1))][setq(T,u(#14/UFUN_GET_BASE_STAT,%q0,TEMP_%1))]=0*,@pemit %#=[errstr()] [pcol(I can't identify)] [argcol(%0)],10*,@pemit %#=[errstr()] [pcol(To award renown you must have the authority)] [argcol(SETSTATS)],110*,@pemit %#=[argcol(ucstr(%1))] [pcol(isn't appropriate renown for)] [argcol(name(%q0))],111,{&DATA_AWARD_[edit(%q0,#,)]_[secs()] [v(DATA_DB)]=ucstr(%1):%2|%#|%3;@trigger #14/TRIG_DBSET=%q0,DATA_%1,[idiv(add(mul(%qP,10),%qT,%2),10)];@trigger #14/TRIG_DBSET=%q0,DATA_TEMP_%1,[mod(add(mul(%qP,10),%qT,%2),10)];@pemit %#=[pcol(Awarded)] [argcol(%2 [ucstr(%1)])] [pcol(to)] [argcol(name(%q0))] [pcol(for:)]%r%3}
+&UFUN_NEWID #4283=rjust(rand(1000000),6,0)
+&TRIG_RENOWN_AWARD #4283=&DATA_AWARD_[edit(%0,#,)]_[secs()]_[u(UFUN_NEWID)] [v(DATA_DB)]=ucstr(%1):%2|%4|%3;@trigger me/TRIG_RENOWN_ADJUST=%0,%1,%2,u(#14/UFUN_GET_BASE_STAT,%0,%1),u(#14/UFUN_GET_BASE_STAT,%0,TEMP_%1);@pemit %4=[pcol(Awarded)] [argcol(%2 [ucstr(%1)])] [pcol(to)] [argcol(name(%0))] [pcol(for:)]%r%3;@notify me
+&TRIG_RENOWN_ADJUST #4283=@wait me/SEM_RENADJUST=@trigger #14/TRIG_DBSET=%0,DATA_%1,[idiv(add(mul(%3,10),%4,%2),10)],%!/SEM_RENADJUST;@wait me/SEM_RENADJUST=@trigger #14/TRIG_DBSET=%0,DATA_TEMP_%1,[mod(add(mul(%3,10),%4,%2),10)],%!/SEM_RENADJUST
+&SEM_RENADJUST #4283=-1
+&SEM_RENAWARD #4283=-1
+&TRIG_RENOWN_LOG #4283=@if %1={@pemit %0=u(UFUN_FMT_AWARD,first(%1));@trigger me/TRIG_RENOWN_LOG=%0,[rest(%1)]},@pemit %0=footer()
+&UFUN_AWARD_NEWER #4283=lt(sub(secs(),extract(%0,4,1,_)),mul(60,60,24,%1))
+&CMND_RENOWN_PLOG #4283=$+renown/plog */*:@switch [t(setr(0,whois(%0)))][cor(strmatch(%q0,%#),hasauthority(%#,VIEWSTATS))]=0*,@pemit %#=[errstr()] [pcol(I can't identify)] [argcol(%0)],10*,@pemit %#=[errstr()] [pcol(To view others' renown you need the authority)] [argcol(VIEWSTATS)].,11,{@pemit %#=[header(Renown History For [argcol(name(%q0))])];@trigger me/TRIG_RENOWN_LOG=%#,[sort(iter(lattr(v(DATA_DB)/DATA_AWARD_[edit(%q0,#,)]_*),if(u(UFUN_AWARD_NEWER,##,%1),##)))]}
+&DATA_DEFAULT_RENOWN_LOG_DAYS #4283=30
+&CMND_RENOWN_AUDIT #4283=$+renown/audit *:@switch [t(setr(0,whois(%0)))][cor(strmatch(%q0,%#),hasauthority(%#,VIEWSTATS))]=0*,@pemit %#=[errstr()] [pcol(I can't identify)] [argcol(%0)],10*,@pemit %#=[errstr()] [pcol(To view others' renown you need the authority)] [argcol(VIEWSTATS)].,11,{@pemit %#=[header(Renown Audit For [argcol(name(%q0))])];@trigger me/TRIG_RENOWN_AUDIT=%#,[sortby(me/UFUN_AWARD_ALPHA,lattr(v(DATA_DB)/DATA_AWARD_[edit(%q0,#,)]_*))]}
+&UFUN_AWARD_ALPHA #4283=[comp(get(v(DATA_DB)/%0),get(v(DATA_DB)/%1))]
+&TRIG_RENOWN_AUDIT #4283=@if %1={@pemit %0=u(UFUN_FMT_AUDIT,first(%1));@trigger me/TRIG_RENOWN_AUDIT=%0,[rest(%1)]},@force %0=+sheet/section %q0/misc
+&UFUN_FMT_AUDIT #4283=[subheader([before(setr(1,get(v(DATA_DB)/%0)),|)] [argcol(convsecs(extract(%0,4,1,_)))] by [pcol([moniker(extract(%q1,2,1,|))])])]

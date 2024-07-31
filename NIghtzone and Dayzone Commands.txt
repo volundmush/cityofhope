@@ -1,0 +1,5 @@
+@skip isdbref(tag(setr(1,nightday)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Nightzone and Dayzone Commands,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
+
+&CMND_NIGHTZONES #nightday=$+nightzones:@switch [hasauthority(%#,viewstats)]=0,{@pemit %#=[error()]},{@pemit %#=[header(Nightzones)];@dolist [search(eval=\[and(match(get(##/zone),night),not(match(get(parent(##)/zone),night)))\])]={@pemit %#=## [name(##)]};@wait 0=@pemit %#=[footer()]}
+
+&CMND_DAYZONES #nightday=$+dayzones:@switch [hasauthority(%#,viewstats)]=0,{@pemit %#=[error()]},{@pemit %#=[header(Dayzones)];@dolist [search(eval=\[and(match(get(##/zone),day),not(match(get(parent(##)/zone),day)))\])]={@pemit %#=## [name(##)]};@wait 0=@pemit %#=[footer()]}

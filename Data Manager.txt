@@ -1,0 +1,236 @@
+@skip isdbref(tag(setr(1,dataman)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No master room set!;@assert/inline isdbref(setr(0,create(Data Manager,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=globalroom()}
+
+
+&META_AUTHOR #dataman=Sponge/#4
+&META_PURPOSE #dataman=Commands and functions to manage attribute storage.
+&META_UPDATED_BY #dataman=Sponge/#4
+&META_NEEDS_FLAGS #dataman=INHERIT
+&META_TRIG_SET_EFFECT #dataman=%0 = char dbref, %1 = STAT name, %2 = Adjustment value, %3 Expiration, %4 Source string
+
+&CMND_DBINIT #dataman=$+init:@switch [not(hasattr(%#,_DATA_DBID))][not(u(UFUN_VALID_DBID,%#))]=*0*,@pemit %#=[errstr()] [pcol(You're already init'ed... or broken. Did you mean)] [argcol(+combat/init)],11,{@create [setr(O,DB_[strip(%n,%b)]_[strip(%#,#)])];@wait 1=@trigger me/TRIG_DBINIT=[num(%qO)],%#}
+&CMND_SHEET #dataman=$+sheet:@force %#=+sheet %#
+&CMND_SHEET_PLAYER #dataman=$+sheet *:@switch [or(hasauthority(%#,VIEWSTATS),strmatch(%#,setr(P,whois(%0))))][t(%qP)]=0*,@pemit %#=[errstr()] [pcol(Without the)] [argcol(VIEWSTATS)] [pcol(authority you can only view your own character sheet.)],10*,@pemit %#=[errstr()] [pcol(I can't find)] [argcol(%0)],11,{@pemit %#=[header(name(%qP))];@trigger me/TRIG_SHEET_SHOW=%qP,[v(LIST_SECTIONS)],%#}
+&CMND_SETSHEET #dataman=$+setsheet */*=*:@switch [hasauthority(%#,SETSTATS)][hasattr(me,UFUN_VALID_[%1])][u(UFUN_VALID_[%1],%2)][t(setr(P,num(*%0)))]=0*,@pemit %#=[ecol(ERROR:)] [pcol(You must have the)] [scol(SETSTATS)] [pcol(authority)].,10*,@pemit %#=[ecol(ERROR:)] [scol(ucstr(%1))] [pcol(is not a valid stat.)],110*,@pemit %#=[ecol(ERROR:)] [argcol(ucstr(%2))] [pcol(is not a valid value for)] [argcol(ucstr(%1))],1110*,@pemit %#=[ecol(ERROR:)] [pcol(Player not found: )] [argcol(%0)],1111,{@trigger me/TRIG_DBSET=%qP,DATA_[%1],%2;@pemit %#=[pcol(Set)] [argcol(ucstr(%1))] [pcol(on)] [argcol(name(%qP))] [pcol(to)] [argcol(%2)][pcol(.)]}
+&CMND_DB #dataman=$+db *:@switch/first [hasauthority(%#,VIEWSTATS)][t(setr(O,num(*%0)))]=0*,@pemit %#=[ecol(ERROR:)] [pcol(You must have the)] [argcol(VIEWSTATS)] [pcol(authority to use this command.)],10*,@pemit %#=[ecol(ERROR:)] [argcol(%0)] [pcol(not found.)],11,@pemit %#=[null(u(UFUN_VALID_DBID,%qO))][header( \(%qD\) DB for [argcol([name(%qO)] [%qO])])]%r[wrap(iter(sort(u(UFUN_DBLATTR,%qO,DATA_*)),u(UFUN_FMT_RAW_DATA,%qO,##)),78)]%r[subheader(Lists)]%r[iter(sort(u(UFUN_DBLATTR,%qO,LIST_*)),u(UFUN_FMT_RAW_LIST,%qO,##),%b,%r)]%r[footer()]
+&CMND_EFFECTS_PLAYER #dataman=$+effects *:@switch [or(hasauthority(%#,VIEWSTATS),strmatch(%#,setr(P,num(*%0))))]=0*,@pemit %#=[ecol(ERROR:)] [pcol(Without the)] [argcol(VIEWSTATS)] [pcol(authority you can only view your own effects.)],1,@pemit %#=[header([name(%qP)] - Effects)]%r[u(UFUN_FMT_EFFECTS,%qP)]%r[footer()]
+&CMND_EFFECTS #dataman=$+effects:@force %#=+effects %#
+&CMND_EFFECTS_CLEAR_PLAYER #dataman=$+effects/clear *:@switch [or(hasauthority(%#,SETSTATS),strmatch(setr(P,num(*%0)),%#))][t(%qP)]=0*,@pemit %#=[ecol(ERROR:)] [pcol(You must have the)] [argcol(SETSTATS)] [pcol(authority to clear someone else's effects)].,10*,@pemit %#=[ecol(ERROR:)] [argcol(%0)] [pcol(not found.)],11,{@trigger me/TRIG_CLEAR_EXPIRED_EFFECTS=%qP;@trigger me/TRIG_CLEAR_CANCELLED_EFFECTS=%qP;@pemit %#=[pcol(Cleared effects on)] [argcol(name(%qP))]}
+&CMND_EFFECTS_CLEAR #dataman=$+effects/clear:@force %#=+effects/clear %#
+&CMND_STATTYPES #dataman=$+stattypes:@pemit %#=[pcol(Stat types:)] [sort(iter(setdiff(u(UFUN_STAT_TYPES),v(LIST_IGNORE_STATTYPES)),capstr(lcstr(##))))]
+&CMND_LISTSTATS #dataman=$+liststats *:@switch [and(u(UFUN_VALID_STAT_TYPE,%0),not(member(v(LIST_IGNORE_STATTYPES),ucstr(%0))))]=0*,@pemit %#=[errstr()] [pcol(Type must be one found in)] [argcol(+stattypes)],1,{@trigger me/TRIG_LISTSTATS=%#,[if(u(UFUN_STAT_IS_SHARDED_TYPE,ucstr(%0)),lattr(#statidx/INDX_SECTION_?_%0),lattr(#statidx/INDX_SECTION_%0))]}
+&CMND_ADDSTAT_UNSAFE #dataman=$+addstat/unsafe *:@pemit %#=[errstr()] [pcol(PLEASE TO BE USING)] [argcol(+cg/addstat)]
+&CMND_DELSTAT_UNSAFE #dataman=$+delstat/unsafe *:@pemit %#=[errstr()] [pcol(PLEASE TO BE USING)] [argcol(+cg/delstat)]
+&CMND_SETSTAT_UNSAFE #dataman=$+setstat/unsafe */*=*:@switch/first [hasauthority(%#,SETSTATS)][u(UFUN_VALID_DBID,setr(N,num(*%0)))][t(u(UFUN_STAT_TYPE,setr(S,u(UFUN_ENCODE_STAT,%1))))]=0*,@pemit %#=[errstr()] [argcol(SETSTATS)] [pcol(authority is required to set stats.)],10*,@pemit %#=[errstr()] [argcol(name(%qN))] [pcol(doesn't have a sheet object set up. Have them run)] [argcol(+init)],110*,@pemit %#=[errstr()] [argcol(%1)] [pcol(is not a recognized stat.)],111,{@pemit %#=[argcol(u(UFUN_DECODE_STAT,%qS))] [pcol(on)] [argcol(name(%qN))] [pcol(set to)] [argcol(%2)];@trigger #14/TRIG_DBSET=%qN,DATA_[%qS],%2}
+&CMND_ABILITY_POINTS #dataman=$+abilitypoints *:@switch [or(strmatch(%#,setr(0,num(*%0))),isstaff(%#))][or(not(isapproved(%q0)),isstaff(%#))]=*0*,@pemit %#=[errstr()] [pcol(This command only works on yourself and when unapproved)],11,@pemit %#=[header(Ability Points for [name(%q0)])]%r[u(#14/UFUN_LOAD_STATS,%q0)][iter(skills talents knowledges,iter(primary secondary,[pcol(ljust([itext(0)][itext(1)],20))]: [argcol(u(#14/UFUN_SUM_SUBSECTION,%q0,[itext(0)][itext(1)]))],%b,%r),%b,%r%r)]%r[footer()]
+&CMND_ABILITY_POINTS_NOARGS #dataman=$+abilitypoints:@force %#=+abilitypoints %#
+&CMND_SQUERY #dataman=$+squery/* *:@switch [hasauthority(%#,VIEWSTATS)][t(setr(0,grab(ISAPPROVED ALL,*%0*)))]=0*,@pemit %#=[errstr()] [pcol(Using +squery requires)] [argcol(VIEWSTATS)] [pcol(authority.)],10*,@pemit %#=[errstr()] [argcol(%0)] [pcol(must match one of)] [argcol(APPROVED ALL)],11,@pemit %#=[header(Sheet Query: [argcol(%1)])]%r[columns(u(UFUN_SQUERY,%1,%q0),36,2,,,,,,,,|,,1)][footer()]
+&CMND_SHEET_TALLY #dataman=$+sheettally *:@switch [or(hasauthority(%#,VIEWSTATS),strmatch(setr(0,num(*%0)),%#))]=0*,@pemit %#=[errstr()] [pcol(You must have the)] [argcol(VIEWSTATS)] [pcol(authority to sheet tally others.)],1,@pemit %#=[header(Sheet tally for [argcol(name(%q0))])]%r[columns(iter(u(UFUN_TALLY_SHEET,%q0),u(UFUN_FMT_TALLY,##),%b,|),36,2,,,,,,,,|,,1)][footer()]
+&CMND_SHEET_TALLY_ME #dataman=$+sheettally:@force %#=+sheettally %#
+&CMND_SHEET_SHOW #dataman=$+sheet/show *:@switch [t(setr(0,whois(%0)))]=0*,@pemit %#=[errstr()] [pcol(I don't recognize)] [argcol(%0)].,1,{@pemit %#=[pcol(You show your sheet to)] [argcol(name(%q0))];@pemit %q0=[header(name(%#))];@trigger me/TRIG_SHEET_SHOW=%#,[v(LIST_SECTIONS)],%q0}
+&CMND_MYSHEET #dataman=$+mysheet *:@pemit %#=[header(My Sheet: [argcol(u(UFUN_DECODE_STAT,%0))])]%r[columns(iter(get(%#/LIST_MYSHEET_[u(UFUN_ENCODE_STAT,%0)]),u(UFUN_FMT_NUM_STAT,%#,u(UFUN_ENCODE_STAT,##),2,22),|,|),24,2,,,,,,,,|,,1)][footer()]
+&CMND_MYSHEET_LIST #dataman=$+mysheet:@pemit %#=[header(My Sheets)]%r%b%b[iter(sort(lattrp(%#/LIST_MYSHEET_*)),[pcol(u(UFUN_DECODE_STAT,after(##,LIST_MYSHEET_)))],%b,%r%b%b)]%r[footer()]
+&SEM_DBSET #dataman=-1
+&CMND_MYSHEET_SHOW #dataman=$+mysheet/show *=*:@switch [t(setr(1,whois(%1)))]=0*,@pemit %#=[errstr()] [pcol(I don't recognize)] [argcol(%1)],1,{@pemit %q1=[header([argcol(%N's)] Sheet: [argcol(u(UFUN_DECODE_STAT,%0))])]%r[columns(iter(get(%#/LIST_MYSHEET_[u(UFUN_ENCODE_STAT,%0)]),u(UFUN_FMT_NUM_STAT,%#,u(UFUN_ENCODE_STAT,##),2,22),|,|),24,2,,,,,,,,|,,1)][footer()];@pemit %#=[pcol(You show your sheet)] [argcol(%0)] [pcol(to)] [argcol(name(%q1))]}
+&CMND_EFFECT_REMOVE #dataman=$+effect/remove *=*:@switch [hasauthority(%#,SETSTATS)][t(setr(0,whois(%0)))][t(setr(1,u(UFUN_DBLATTR,%q0,DATA_EFFECT_*_%1)))]=0*,@pemit %#=[errstr()] [pcol(To remove effects you must have the authority)] [argcol(SETSTATS)],10*,@pemit %#=[errstr()] [pcol(I can't identify)] [argcol(%0)],110*,@pemit %#=[errstr()] [argcol(name(%q0))] [pcol(doesn't have an effect ID)] [argcol(%1)],111,{@trigger me/TRIG_DBSET=%q0,%q1;@pemit %#=[pcol(Removed.)]}
+&CMND_EFFECT_PERM #dataman=$+effect/perm */*=*/*:@switch [hasauthority(%#,SETSTATS)][t(setr(0,whois(%0)))]=0*,@pemit %#=[errstr()] [pcol(To add effects you must have the authority)] [argcol(SETSTATS)],10*,@pemit %#=[errstr()] [pcol(I can't identify)] [argcol(%0)],11,{@trigger me/TRIG_SET_EFFECT=%q0,[u(UFUN_ENCODE_STAT,%1)],%2,1656187930,%3;@pemit %#=[pcol(Set.)]}
+&CMND_EFFECT_REMOVE_SLASH #dataman=$+effect/remove */*:@force %#=+effect/remove %0=%1
+&CMND_STATSEARCH #dataman=$+statsearch *:@pemit %#=[setq(0,u(UFUN_ENCODE_STAT,%0))][header(Stats Matching [argcol(%0)])]%r[iter(squish(trim(iter(setdiff(u(UFUN_STAT_TYPES),v(LIST_IGNORE_STATTYPES)),if(setr(1,u(UFUN_STAT_SEARCH_MATCH,##,%q0)),ulocal(UFUN_FMT_SEARCH_MATCH,##:%q1)),%b,|),|),|),##,|,%r)]%r[footer()]
+&CMND_CG_DESPACE #dataman=$+cg/despace *:@switch [hasauthority(%#,SETSTATS)]=0*,@pemit %#=[errstr()] [pcol(Doing that requires the authority)] [argcol(SETSTATS)],1,{@if [u(#14/UFUN_VALID_DBID,whois(%0))]=@dolist lattr(%qD/DATA_*)=&## %qD=[trim(get(%qD/##))];@pemit %#=[pcol(Done.)]}
+&CMND_QSET #dataman=$+qset *=*:@switch [hasauthority(%#,SETSTATS)]=0*,@pemit %#=[errstr()] [pcol(Changing stats requires the authority)] [argcol(SETSTATS)],1,{@dolist/delimit | %1=@force %#=+setstat/unsafe [escape(%0)]/[escape(trim(first(##,:)))]=[escape(trim(rest(##,:)))]}
+&CMND_CG_CLEARBSD #dataman=$+cg/clearbsd *:@force %#=+qset [escape(%0)]=power|cunning|infamy|temp power|temp cunning|temp infamy
+&CMND_CG_CLEARGAI #dataman=$+cg/cleargai *:@force %#=+qset [escape(%0)]=glory|wisdom|honor|temp glory|temp wisdom|temp honor
+&CMND_EFFECT_TEMP #dataman=$+effect/temp */*=*/*/*:@switch [hasauthority(%#,SETSTATS)][t(setr(P,num(*%0)))]=0*,@pemit %#=[ecol(ERROR:)] [pcol(You must have the)] [argcol(SETSTATS)] [pcol(authority to set effects)].,10*,@pemit %#=[ecol(ERROR:)] [argcol(%0)] [pcol(not found.)],11,{@trigger me/TRIG_SET_EFFECT=%qP,%1,%2,add(secs(),mul(86400,%3)),%4;@pemit %#=[pcol(Set new effect on)] [argcol(name(%qP))]}
+&CMND_EXPLAIN_SHEETOP #dataman=$+explain/op *:@pemit %#=u(UFUN_EXPLAIN_SHEETOP,%0)
+&CMND_CG_CHECK #dataman=$+cg/check *:@switch [t(setr(0,whois(%0)))][corbool(hasauthority(%#,VIEWSTATS),strmatch(%#,%q0))]=0*,@pemit %#=[errstr()] [pcol(I can't identify the player)] [argcol(%0)],10*,@pemit %#=[errstr()] [pcol(To check someone else's +sheet you must have the authority)] [argcol(VIEWSTATS)],11,{@pemit %#=[header(Sheet Discrepancies for [argcol(moniker(%q0))])];@trigger me/TRIG_CHECK_RULES=%q0,[lattr(#cgcheck/DATA_RULE_*)],%#}
+&CMND_DB_LIST #dataman=$+db/list:@switch [hasauthority(%#,VIEWSTATS)]=0*,@pemit %#=[errstr()] [pcol(Listing tables requires the authority)] [argcol(VIEWSTATS)].,1,{@pemit %#=[header(Database Tables)];@pemit %#=[iter(sort(lattr(#datacab/DB_TABLE-*)),u(UFUN_TABLE_LISTING,##),%b,%r)];@pemit %#=footer()}
+&CMND_CG_VCHECK #dataman=$+cg/vcheck *=*:@switch [hasauthority(%#,MODIFYCGEN)][t(u(UFUN_STAT_TYPE,setr(0,u(UFUN_ENCODE_STAT,%0))))][not(strip(%1,0123456789-/))]=0*,[errstr()] [pcol(To modify cgen you must have the authority)] [argcol(MODIFYCGEN)],10*,@pemit %#=[errstr()] [pcol(I don't recognize the stat)] [argcol(%0)],110*,@pemit %#=[errstr()] [pcol(Values must be empty or in one of these forms:)] [argcol(3)][pcol(\,)] [argcol(1-3)][pcol(\, or)] [argcol(1/3/4)],111,{&DATA_VALUES_%q0 #cgcheck=%1;@pemit %#=[pcol(Set appropriate values for)] [argcol(u(UFUN_DECODE_STAT,%q0))] [pcol(to)] [argcol(%1)]}
+&CMND_CG_VCHECKS #dataman=$+cg/vchecks:@pemit %#=[header(Stat Value Checks)]%r[columns(iter(sort(lattr(#cgcheck/DATA_VALUES_*)),ljust(pcol(u(UFUN_DECODE_STAT,after(##,DATA_VALUES_))),30,.)[rjust(get(#cgcheck/##),8,.)],%b,|),,39,1,,,,,,,,|,,1)][footer()]
+&CMND_CG_ADDSTAT #dataman=$+cg/addstat *=*:@switch [hasauthority(%#,MODIFYCGEN)][u(UFUN_VALID_STAT_TYPE,%0)][not(setr(T,u(UFUN_STAT_TYPE,setr(1,u(UFUN_ENCODE_STAT,%1)))))]=0*,@pemit %#=[errstr()] [pcol(To modify chargen you must have the authority)] [argcol(MODIFYCGEN)],10*,@pemit %#=[errstr()] [argcol(ucstr(%0))] [pcol(is not a valid stat type. Should be one of:)] [argcol(sort(u(UFUN_STAT_TYPES)))],110*,@pemit %#=[errstr()] [argcol(u(UFUN_DECODE_STAT,%q1))] [pcol(already exists in)] [argcol(%qT)],111,{&UFUN_BLIST_[%0]_MANUALLY-ADDED #wod20==setunion(get(#wod20=/UFUN_BLIST_[%0]_MANUALLY-ADDED),%q1,|);@trigger me/TRIG_INDEX_SECTION=%0;@pemit %#=[pcol(Done.)]}
+&CMND_CG_DELSTAT #dataman=$+cg/delstat *:@switch [hasauthority(%#,MODIFYCGEN)][t(setr(1,u(UFUN_STAT_TYPE,setr(0,u(UFUN_ENCODE_STAT,%0)))))][not(setr(N,words(u(UFUN_MATCH_SHEETS,%q0@isnt@))))]=0*,@pemit %#=[errstr()] [pcol(To modify chargen you must have the authority)] [argcol(MODIFYCGEN)],10*,@pemit %#=[errstr()] [pcol(I can't figure out the type for)] [argcol(u(UFUN_DECODE_STAT,%q0))],110*,@pemit %#=[errstr()] [argcol(u(UFUN_DECODE_STAT,%q0))] [pcol(cannot be removed. It is on)] [argcol(%qN)] [pcol(character sheets.)],111,{&UFUN_BLIST_[%q1]_MANUALLY-ADDED #wod20==setdiff(get(#wod20=/UFUN_BLIST_[%q1]_MANUALLY-ADDED),%q0,|);@trigger me/TRIG_INDEX_SECTION=%q1;@pemit %#=[pcol(Done.)]}
+&CMND_MYSHEETS #dataman=$+mysheets *:@dolist %0=@force %#=+mysheet ##
+&CMND_SHEET_PLAYER_SECTION #dataman=$+sheet/section */*:@switch [or(hasauthority(%#,VIEWSTATS),strmatch(%#,setr(P,whois(%0))))][t(%qP)]=0*,@pemit %#=[errstr()] [pcol(Without the)] [argcol(VIEWSTATS)] [pcol(authority you can only view your own character sheet.)],10*,@pemit %#=[errstr()] [pcol(I can't find)] [argcol(%0)],11,{@pemit %#=[header(name(%qP))];@trigger me/TRIG_SHEET_SHOW=%qP,[capstr(%1)],%#}
+&CMND_SHEET_PLAYER_SECTIONS #dataman=$+sheet/sections:@pemit %#=[header(Valid sections for +sheet/section)];@pemit %#=[iter(v(LIST_SECTIONS),before(##,/))];@pemit %#=[footer()]
+&CMND_DB_SHOW #dataman=$+db/show *:@switch [hasauthority(%#,VIEWSTATS)][t(setr(0,u(UFUN_WHICH_TABLE,%0)))]=0*,@pemit %#=[errstr()] [pcol(To look at tables you need the authority)] [argcol(VIEWSTATS)],10*,@pemit %#=[errstr()] [pcol(I don't recognize a table called)] [argcol(%0)][pcol(. Check)] [argcol(+db/list)],11,{@trigger me/TRIG_SCHEMA_SHOW=%#,%q0}
+&CMND_DB_SETFIELD #dataman=$+db/setfield */*=*:@switch [hasauthority(%#,SETSTATS)][t(setr(0,u(UFUN_WHICH_TABLE,%0)))][hasattr(me,UFUN_VALIDATE_%2)]=0*,@pemit %#=[errstr()] [pcol(To modify tables you must have the authority)] [argcol(SETSTATS)],10*,@pemit %#=[errstr()] [pcol(No such table:)] [argcol(ucstr(%0))],110*,@pemit %#=[errstr()] [pcol(Not a valid type:)] [argcol(ucstr(%2))],111,{@trigger me/TRIG_TABLE_SETFIELD=%q0,%1,%2;@pemit %#=[pcol(Added field)] [argcol(ucstr(%1))]}
+&CMND_FRIDGIFY #dataman=$+fridgify *:@switch [hasauthority(%#,APPROVECHARS)][t(setr(0,whois(%0)))][isapproved(%q0)][not(setinter(%q0,lwho()))][gt(sub(secs(),convtime(get(%q0/last))),v(DATA_TIME_AWAY))]=0*,@pemit %#=[errstr()] [pcol(To fridgify someone you need the authority)] [argcol(APPROVECHARS)].,10*,@pemit %#=[errstr()] [pcol(I can't identify the player)] [argcol(%0)],110*,@pemit %#=[errstr()] [argcol(moniker(%q0))] [pcol(is not approved.)],1110*,@pemit %#=[errstr()] [argcol(moniker(%q0))] [pcol(is on right now!)],11110*,@pemit %#=[errstr()] [argcol(moniker(%q0))] [pcol(has only been away)] [argcol(div(sub(secs(),convtime(get(%q0/last))),mul(60,60,24)))] [pcol(days\, not)] [argcol(div(v(DATA_TIME_AWAY),mul(60,60,24)))],11111,{@trigger me/TRIG_FRIDGIFY=%q0;@pemit %#=[argcol(moniker(%q0))] [pcol(has been Fridgified.)]}
+
+
+&TRIG_DBINIT #dataman=&_DATA_DBID %1=%0;&DATA_OWNER %0=%1;&DATA_OWNER_NAME %0=name(%1);@lock %1/_DATA_DBID;@tel %0=v(DATA_DB_STORAGE);@pemit %1=pcol(Initialization Complete)
+&TRIG_DBSET #dataman=@switch [u(UFUN_VALID_DBID,%0)]=1,{&[%1] %qD=%2};@if [t(%3)]=@notify %3
+&TRIG_SET_EFFECT #dataman=@switch [u(UFUN_VALID_DBID,%0)][neq(%2,0)]=11,&DATA_EFFECT_[%1]_[rjust(rand(1000000),6,0)] %qD=%2|%3|%4
+&TRIG_CLEAR_EXPIRED_EFFECTS #dataman=@dolist iter(u(UFUN_DBLATTR,%0,DATA_EFFECT_*),if(and(lt([u(UFUN_LOAD_EFFECT,u(UFUN_DBGET,%0,##))]%qE,secs()),not(strmatch(%qE,CANCELLED))),##))={@trigger me/TRIG_DBSET=%0,##}
+&TRIG_CLEAR_CANCELLED_BYTYPE #dataman=@dolist [u(UFUN_LOAD_EFFECT,u(UFUN_LARGEST_EFFECT,%0,%1))][%qL]={@trigger me/TRIG_DBSET=%0,##};@switch [t(%qT)]=1,{@trigger me/TRIG_SET_EFFECT=%0,%1,%qT,CANCELLED,[u(UFUN_CONSOLIDATED,%qS)]}
+&TRIG_CLEAR_CANCELLED_EFFECTS #dataman=@dolist [u(UFUN_CANCELLED_EFFECT_TYPES,%0)]={@trigger me/TRIG_CLEAR_CANCELLED_BYTYPE=%0,##}
+&TRIG_DBINC #dataman=@trigger me/TRIG_DBSET=%0,DATA_%1,add(%2,u(UFUN_GET_BASE_STAT,%0,%1))
+&TRIG_DBDEC #dataman=@trigger me/TRIG_DBSET=%0,DATA_%1,sub(u(UFUN_GET_BASE_STAT,%0,%1),%2)
+&TRIG_INDEX_SECTION #dataman=@if [u(UFUN_STAT_IS_SHARDED_TYPE,%0)]={@trigger me/TRIG_INDEX_SHARD_SECTION=%0},{@trigger me/TRIG_INDEX_UNSHARD_SECTION=%0}
+&TRIG_INDEX_ALL #dataman=@dolist u(UFUN_STAT_TYPES)=@trigger me/TRIG_INDEX_SECTION=##
+&TRIG_CLEAR_EFFECTS_CONNECT #dataman=@dolist setunion(lwho(),)={@trigger me/TRIG_CLEAR_EXPIRED_EFFECTS=##;@trigger me/TRIG_CLEAR_CANCELLED_EFFECTS=##}
+&TRIG_CLEARSHEET #dataman=@dolist setdiff(u(#14/UFUN_DBLATTR,%0,DATA_*),DATA_OWNER DATA_OWNER_NAME)=@trigger #14/TRIG_DBSET=%0,##,
+&TRIG_CHECK_RULES #dataman=@if %1={@trigger me/TRIG_CHECK_RULE=%0,[first(%1)],%2;@trigger me/TRIG_CHECK_RULES=%0,[rest(%1)],%2},{@trigger me/TRIG_VCHECKS=%0,[sort(lattr(#cgcheck/DATA_VALUES_*))],%2}
+&TRIG_CHECK_RULE #dataman=@if [u(UFUN_SHEET_EXPR,%0,before(get(#cgcheck/%1),!!))]={@switch [u(UFUN_SHEET_EXPR,%0,extract(get(#cgcheck/%1),2,1,!!))]=0,{@trigger me/TRIG_CHECK_MISMATCH=%0,%1,%2}}
+&TRIG_CHECK_MISMATCH #dataman=@pemit %2=[subheader(pcol(Rule) [argcol(last(%1,_))])]%r[pcol(last(get(#cgcheck/%1),!!))]
+&TRIG_SCHEMA_SHOW #dataman=@pemit %0=header(Table: [argcol(after(name(%1),TABLE-))])%r[iter(sort(lattr(%1/DATA_FIELD_*)),u(UFUN_FMT_SCHEMA_FIELD,%1,##),%b,%r)]%r[footer()]
+&TRIG_CREATE_TABLE #dataman=@create TABLE-%0;@link TABLE-%0=#datacab;&DB_TABLE-%0 #datacab=num(%0);@desc %0=%1;@tel TABLE-%0=#datacab
+&TRIG_TABLE_SETFIELD #dataman=&DATA_FIELD_[u(UFUN_ENCODE_STAT,%1)] %0=%2|Y||N
+&TRIG_FRIDGIFY #dataman=@link %0=[v(DB_OOC_NEXUS)];@tel %0=[v(DB_THE_FRIDGE)];@force %0=+request [name(%0)] Fridged=[name(%0)] has been sent to The Fridge for idleness, but is still approved. Some cleanup may be appropriate.%r%rTHIS IS AN AUTOMATED MESSAGE
+&TRIG_CHECK_MISMATCH_ORIG #dataman=@pemit %2=[subheader(pcol(Rule) [argcol(last(%1,_))])]%r[pcol(Because your sheet matches)] [argcol(if(strmatch(before(setr(1,get(#cgcheck/%1)),!!),*||*),ONE,ALL))] [pcol(of these criteria:)]%r%t[iter(u(UFUN_EXPLAIN_OPS,before(%q1,!!),if(strmatch(before(%q1,!!),*||*),||,&&)),##,|,%r%t)]%r[argcol(if(strmatch(after(%q1,!!),*||*),ONE,ALL))] [pcol(must be true:)]%r%t[iter(u(UFUN_EXPLAIN_OPS,after(%q1,!!),if(strmatch(after(%q1,!!),*||*),||,&&)),##,|,%r%t)]
+&TRIG_VCHECKS #dataman=@if %1={@trigger me/TRIG_VCHECK=%0,[first(%1)],%2;@trigger me/TRIG_VCHECKS=%0,[rest(%1)],%2},@force me=@force me=@pemit %2=footer()
+&TRIG_VCHECK #dataman=@if [candbool(u(UFUN_GET_BASE_STAT,%0,after(%1,DATA_VALUES_)),not(u(UFUN_VCHECK,%0,%1)))]=@pemit %2=[subheader(setr(2,argcol(u(UFUN_DECODE_STAT,setr(1,after(%1,DATA_VALUES_))))))]%r[pcol(%q2 is)] [argcol(u(UFUN_GET_BASE_STAT,%0,%q1))][pcol(. It must be)] [argcol(get(#cgcheck/%1))]
+&TRIG_LISTSTATS #dataman=@if %1={@pemit %0=columns(iter(get(#statidx/[first(%1)]),u(UFUN_DECODE_STAT,##),%b,|),25,2,,,,,,,,|,,1);@trigger me/TRIG_LISTSTATS=%0,[rest(%1)]}
+&TRIG_INDEX_SHARD_SECTION_A #dataman=&INDX_SECTION_[%1]_[%0] #statidx=[setq(0,)][trim(iter(lattr(#wod20=/UFUN_BLIST_[%0]_*),setq(0,graball(setunion(u(UFUN_MATCH_STATS_INDEX,##),%q0),%1*))))]%q0
+&TRIG_INDEX_SHARD_SECTION #dataman=@dolist [u(UFUN_STAT_INITIALS)]=@trigger me/TRIG_INDEX_SHARD_SECTION_A=%0,##
+&TRIG_SHEET_SHOW #dataman=@if %1={@pemit %2=[u(UFUN_LOAD_STATS,%0)]trim(u(UFUN_FMT_SECTION,%0,before(first(%1),/),after(first(%1),/)),r,%r);@trigger me/TRIG_SHEET_SHOW=%0,[rest(%1)],%2},{@pemit %2=[if(not(isapproved(%0)),center([ecol(Not)] [scol(approved.)],78)%r)][footer()]}
+&TRIG_INDEX_UNSHARD_SECTION #dataman=&INDX_SECTION_[%0] #statidx=[setq(0,)][trim(iter(lattr(#wod20=/UFUN_BLIST_[%0]_*),setq(0,setunion(u(UFUN_MATCH_STATS_INDEX,##),%q0))))]%q0
+
+&UFUN_VALID_DBID #dataman=and(t(setr(D,get(%0/_DATA_DBID))),strmatch(owner(%0/_DATA_DBID),owner(me)),strmatch(get(%qD/DATA_OWNER),%0))
+&UFUN_DBGET #dataman=if(u(UFUN_VALID_DBID,%0),get(%qD/%1))
+&UFUN_VALID_INT #dataman=and(eq(%0,trunc(%0)),gte(%0,%1),lte(%0,%2))
+&UFUN_GET_EFF_STAT #dataman=ladd([u(UFUN_GET_BASE_STAT,%0,%1)] [iter(u(UFUN_DBLATTR,%0,DATA_EFFECT_[%1]_??????),[u(UFUN_LOAD_EFFECT,u(UFUN_DBGET,%0,##))][if(u(UFUN_EFFECT_ACTIVE,%qE),%qV,0)])])
+&UFUN_GET_BASE_STAT #dataman=u(UFUN_DBGET,%0,DATA_[%1])
+&UFUN_STR_FMT #dataman=[pcol(u(UFUN_DECODE_STAT,%0))][rjust(argcol(iter(%1,capstr(lcstr(##)))),sub(%2,strlen(%0)),.)]
+&UFUN_VALID_FULLNAME #dataman=and(lte(strlen(%0),20),not(strip(%0,abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ -')))
+&UFUN_FMT_NUM_STAT #dataman=[ljust(pcol(u(UFUN_DECODE_STAT,%1)),sub(%3,5),.)][argcol([rjust(u(UFUN_GET_EFF_STAT,%0,%1),%2,0)]/[rjust(u(UFUN_GET_BASE_STAT,%0,%1),2,0)])]
+&UFUN_FMT_SECTION #dataman=[subheader(%1)]%r[u(UFUN_FMT_[%1],%0,%2)]
+&UFUN_FMT_SHEET #dataman=iter(v(LIST_SECTIONS),u(UFUN_FMT_SECTION,%0,before(##,/),after(##,/)),%b,@@)
+&UFUN_FMT_STR_STAT #dataman=u(UFUN_STR_FMT,%1,u(UFUN_GET_BASE_STAT,%0,%1),%2)
+&UFUN_FMT_RAW_DATA #dataman=%b%b[pcol([after(%1,DATA_)]:)]%cx..%cn[argcol(u(UFUN_DBGET,%0,%1))]
+&UFUN_DBLATTR #dataman=if(u(UFUN_VALID_DBID,%0),lattr(%qD/%1))
+&UFUN_FMT_RAW_LIST #dataman=[pcol([after(%1,LIST_)]:)]%b[iter(u(UFUN_DBGET,%0,%1),argcol(##),|,%cx..%cn)]
+&UFUN_LOAD_EFFECT #dataman=[setq(V,extract(%0,1,1,|))][setq(E,extract(%0,2,1,|))][setq(S,extract(%0,3,1,|))]
+&UFUN_EFFECT_ACTIVE #dataman=or(strmatch(%0,CANCELLED),gt(%0,secs()))
+&UFUN_FMT_EFFECT #dataman=[argcol(last(%0,_))] [pcol(u(UFUN_DECODE_STAT,before(after(%0,DATA_EFFECT_),_[last(%0,_)])))]: [argcol(%qV)] - [pcol(Expires:)] [argcol(if(strmatch(%qE,CANCELLED),When Cancelled Out,if(lt(%qE,secs()),Expired,convsecs(%qE))))] - [pcol(%qS)]
+&UFUN_FMT_EFFECTS #dataman=iter(sort(u(UFUN_DBLATTR,%0,DATA_EFFECT_*)),u(UFUN_FMT_EFFECT,##[u(UFUN_LOAD_EFFECT,u(UFUN_DBGET,%0,##))]),%b,%r)
+&UFUN_EFFECT_CANCELLED #dataman=[u(UFUN_LOAD_EFFECT,u(UFUN_DBGET,%1,%0))][strmatch(%qE,CANCELLED)]
+&UFUN_CANCELLED_EFFECT_TYPES #dataman=setunion(setr(0,iter(filter(UFUN_EFFECT_CANCELLED,u(UFUN_DBLATTR,%0,DATA_EFFECT_*),%b,%b,%0),u(UFUN_EFFECT_STAT,##))),%q0)
+&UFUN_GET_EFFECT #dataman=u(UFUN_LOAD_EFFECT,u(UFUN_DBGET,%0,%1))
+&UFUN_CANC_EFFECT_BATTLE #dataman=[if(gt(abs(before(%0,|)),abs(%1,|)),%0,%1)]
+&UFUN_LARGEST_EFFECT #dataman=[fold(UFUN_CANC_EFFECT_BATTLE,setr(0,iter(setr(L,filter(UFUN_EFFECT_CANCELLED,u(UFUN_DBLATTR,%0,DATA_EFFECT_[%1]_??????),%b,%b,%0)),[u(UFUN_DBGET,%0,##)],%b,||)),,||)][setq(T,ladd(iter(%q0,before(##,|),||)))]
+&UFUN_CONSOLIDATED #dataman=if(strmatch(%0,*\(Consolidated\)),%0,%0 \(Consolidated\))
+&UFUN_SECTION_VITALS #dataman=u(#wod20=/UFUN_BUILD_LIST,%0,vitals)
+&UFUN_VALID_STAT1-5 #dataman=and(gte(%0,1),lte(%0,5))
+&UFUN_VALID_STAT0-5 #dataman=and(gte(%0,0),lte(%0,5))
+&UFUN_VALID_STAT0-10 #dataman=and(gte(%0,1),lte(%0,10))
+&UFUN_VALID_STAT1-10 #dataman=and(strmatch(%0,trunc(%0)),gte(%0,1),lte(%0,10))
+&UFUN_VALID_STAT0-7 #dataman=and(gte(%0,1),lte(%0,7))
+&UFUN_VALID_ENUM #dataman=t(member(lcstr(get(#wod20=/LIST-[%1])),lcstr(%0),|))
+&UFUN_ENCODE_STAT #dataman=ucstr(edit(trim(%0),%b,_))
+&UFUN_FMT_ABILITIES #dataman=[iter(Talents Skills Knowledges,argcol(center(##,25)))]%r[columns(iter(3zip(u(UFUN_LIST_SUBSECTION,talents),u(UFUN_LIST_SUBSECTION,skills),u(UFUN_LIST_SUBSECTION,knowledges),%b,|),if(##,u(UFUN_FMT_NUM_STAT,%0,##,2,23)),|,|),25,2,,,,,,,,|,,1)]
+&UFUN_FMT_ATTRIBUTES #dataman=[iter(Physical Social Mental,argcol(center(##,25)))]%r[columns(iter(Strength Manipulation Perception Dexterity Charisma Intelligence Stamina Appearance Wits,u(UFUN_FMT_NUM_STAT,%0,##,2,23),%b,|),25,2,,,,,,,,|,,1)]
+&UFUN_LOAD_STATS #dataman=setq(Z,iter(u(UFUN_DBLATTR,%0,DATA_*),after(##,DATA_)))
+&UFUN_LIST_SUBSECTION #dataman=localize(if(u(UFUN_STAT_IS_SHARDED_TYPE,%0),[setq(0,)]iter(lattr(#statidx/INDX_SECTION_?_[%0]),setq(0,setunion(%q0,setinter(%qZ,get(#statidx/##)))))[%q0],setinter(%qZ,get(#statidx/INDX_SECTION_[%0]))))
+&UFUN_FMT_ADVANTAGES #dataman=[iter(Backgrounds Merits Flaws,argcol(center(##,25)))]%r[columns(iter(3zip(u(UFUN_LIST_SUBSECTION,backgrounds),u(UFUN_LIST_SUBSECTION,merits),u(UFUN_LIST_SUBSECTION,flaws),%b,|),if(##,u(UFUN_FMT_NUM_STAT,%0,##,2,23)),|,|),25,2,,,,,,,,|,,1)]
+&UFUN_COMP_BY #dataman=sub(member(%q0,%0),member(%q0,%1))
+&UFUN_FMT_VITALS #dataman=[setq(0,u(#wod20=/UFUN_BLIST_VITALS_ALL))][column(iter(sortby(UFUN_COMP_BY,u(UFUN_LIST_SUBSECTION,vitals)),u(UFUN_FMT_STR_STAT,%0,##,36),%b,|),38,|,2)]
+&UFUN_FMT_POWERS #dataman=iter(ulocal(#wod20=/UFUN_BUILD_LIST,%0,powers),%b%b[center(%b<%b[argcol(capstr(lcstr(##)))]%b>%b,74,-)]%r[columns(iter(u(UFUN_LIST_SUBSECTION,##),u(UFUN_FMT_NUM_STAT,%0,itext(0),2,23),%b,|),25,2,,,,,,,,|,,1)],|,%r)
+&UFUN_FMT_POOLS #dataman=column(iter(u(UFUN_LIST_SUBSECTION,pools),u(UFUN_FMT_NUM_STAT,%0,##,2,23),%b,|),25,2,,,,,,,,|,,1)
+&UFUN_HAS_STAT #dataman=if(u(UFUN_VALID_DBID,%0),hasattrp(%qD,%1),0)
+&UFUN_DECODE_STAT #dataman=iter(edit(escape(%0),_,%b),capstr(lcstr(##)))
+&UFUN_STAT_TYPES #dataman=get(#statidx/LIST_STAT_TYPES)
+&UFUN_STAT_IS_TYPE #dataman=t(if(u(UFUN_STAT_IS_SHARDED_TYPE,%0),ladd(iter(lattr(#statidx/INDX_SECTION_?_%0),member(get(#statidx/##),%qS))),member(get(#statidx/INDX_SECTION_%0),%qS)))
+&UFUN_STAT_TYPE #dataman=[setq(S,ucstr(%0))]trim(filter(UFUN_STAT_IS_TYPE,u(UFUN_STAT_TYPES)))
+&UFUN_FIND_STAT #dataman=if(or(u(UFUN_GET_EFF_STAT,%0,setr(1,u(UFUN_ENCODE_STAT,%1))),member(setr(L,u(UFUN_DBLATTR,%0,DATA_[%q1]*)),%q1)),trim(%q1),switch(words(%qL),0,Error: No match,1,if(u(UFUN_STAT_TYPE,setr(L,after(%qL,DATA_))),%qL,Error: No match),Error: I don't know which you mean!))
+&UFUN_FMT_MISC #dataman=column(iter([u(UFUN_LIST_SUBSECTION,misc)] [u(UFUN_LIST_SUBSECTION,langs)],u(UFUN_FMT_NUM_STAT,%0,##,2,23),%b,|),25,2,,,,,,,,|,,1)
+&UFUN_STR_STAT_MATCH #dataman=strmatch(lcstr(u(UFUN_GET_BASE_STAT,%0,%1)),lcstr(%2))
+&UFUN_SUM_SUBSECTION #dataman=ladd(iter(u(UFUN_LIST_SUBSECTION,%1),u(UFUN_GET_BASE_STAT,%0,##)))
+&UFUN_SHEETOP_IS #dataman=strmatch(lcstr(u(UFUN_GET_BASE_STAT,%0,%1)),lcstr(%2))
+&UFUN_SHEETOP_MATCHES #dataman=strmatch(lcstr(u(UFUN_GET_BASE_STAT,%0,%1)),*[lcstr(%2)]*)
+&UFUN_SHEETOP_IN #dataman=t(member(lcstr(%2),lcstr(u(UFUN_GET_BASE_STAT,%0,%1)),|))
+&UFUN_SHEETOP_BEQ #dataman=eq(u(UFUN_GET_BASE_STAT,%0,%1),%2)
+&UFUN_SHEETOP_EEQ #dataman=eq(u(UFUN_GET_EFF_STAT,%0,%1),%2)
+&UFUN_SHEETOP_BNEQ #dataman=neq(u(UFUN_GET_BASE_STAT,%0,%1),%2)
+&UFUN_SHEETOP_ENEQ #dataman=neq(u(UFUN_GET_EFF_STAT,%0,%1),%2)
+&UFUN_SHEETOP_BGT #dataman=gt(u(UFUN_GET_BASE_STAT,%0,%1),%2)
+&UFUN_SHEETOP_EGT #dataman=gt(u(UFUN_GET_EFF_STAT,%0,%1),%2)
+&UFUN_SHEETOP_BLT #dataman=lt(u(UFUN_GET_BASE_STAT,%0,%1),%2)
+&UFUN_SHEETOP_ELT #dataman=lt(u(UFUN_GET_EFF_STAT,%0,%1),%2)
+&UFUN_SHEETOP_BGTE #dataman=gte(u(UFUN_GET_BASE_STAT,%0,%1),%2)
+&UFUN_SHEETOP_EGTE #dataman=gte(u(UFUN_GET_EFF_STAT,%0,%1),%2)
+&UFUN_SHEETOP_BLTE #dataman=lte(u(UFUN_GET_BASE_STAT,%0,%1),%2)
+&UFUN_SHEETOP_ELTE #dataman=lte(u(UFUN_GET_EFF_STAT,%0,%1),%2)
+&UFUN_SHEETOP_ISNT #dataman=not(u(UFUN_SHEETOP_IS,%0,%1,%2))
+&UFUN_SHEETOP #dataman=if(hasattrp(me,setr(O,UFUN_SHEETOP_[extract(%1,2,1,@)])),u(%qO,%0,u(UFUN_ENCODE_STAT,extract(%1,1,1,@)),u(UFUN_SHEETOPERAND_VALUE,%0,extract(%1,3,1,@))))
+&UFUN_FILT_ISAPPROVED #dataman=isapproved(%0)
+&UFUN_FILT_ALL #dataman=1
+&UFUN_MAP_OWNER #dataman=get(%0/DATA_OWNER)
+&UFUN_SHEETED_PLAYERS #dataman=filter(UFUN_FILT_[switch(%0,ISAPPROVED,ISAPPROVED,ALL,ALL,ISAPPROVED)],map(UFUN_MAP_OWNER,lcon(v(DATA_DB_STORAGE))))
+&UFUN_MATCH_SHEETS #dataman=iter(u(UFUN_SHEETED_PLAYERS,%1),if(u(UFUN_SHEET_EXPR,##,%0),##))
+&UFUN_SQUERY #dataman=[setq(0,u(UFUN_ENCODE_STAT,before(%0,@)))][sort(iter(u(UFUN_MATCH_SHEETS,%0,%1),[ljust(pcol(name(##):),15,.)][rjust(argcol(u(UFUN_GET_BASE_STAT,##,%q0)),18,.)],%b,|),a,|)]
+&UFUN_FILT_MATCHES_SHEET #dataman=u(UFUN_SHEETOP,%q0,before(get(#wod20=/%0),/))
+&UFUN_TALLY_LIST #dataman=[setq(0,%0)][filter(UFUN_FILT_MATCHES_SHEET,lattr(#wod20=/DATA_TALLY_*))]
+&UFUN_TALLY_SECTION #dataman=ladd(iter(u(#wod20=/[after(get(#wod20=/%1),/)]),u(UFUN_GET_BASE_STAT,%0,##),|))
+&UFUN_TALLY_SHEET #dataman=iter(u(#14/UFUN_TALLY_LIST,%0),[after(##,DATA_TALLY_)]:[u(#14/UFUN_TALLY_SECTION,%0,##)])
+&UFUN_FMT_TALLY #dataman=[ljust(pcol(u(UFUN_DECODE_STAT,before(%0,:))),31,.)][rjust(argcol(after(%0,:)),3,.)]
+&UFUN_EFFECT_STAT #dataman=before(after(%0,DATA_EFFECT_),_[last(%0,_)])
+&UFUN_ANY_SHEETOP #dataman=t(ladd(iter(%1,u(UFUN_SHEETOP,%0,##),||)))
+&UFUN_ALL_SHEETOP #dataman=eq(ladd(iter(%1,u(UFUN_SHEETOP,%0,##),&&)),words(%1,&&))
+&UFUN_SHEET_EXPR #dataman=if(and(t(%0),t(%1)),if(strmatch(%1,*||*),u(UFUN_ANY_SHEETOP,%0,%1),u(UFUN_ALL_SHEETOP,%0,%1)),0)
+&UFUN_SHEETOPERAND_VALUE #dataman=if(strmatch(%1,B:*),u(UFUN_GET_BASE_STAT,%0,after(%1,:)),if(strmatch(%1,E:*),u(UFUN_GET_EFF_STAT,%0,after(%1,:)),%1))
+&UFUN_POINTS_ABILITIES #dataman=add(u(UFUN_SUM_SUBSECTION,%0,primary[%1]),fdiv(u(UFUN_SUM_SUBSECTION,%0,secondary[%1]),2))
+&UFUN_SHEETOP_NOTIN #dataman=not(member(lcstr(%2),lcstr(u(UFUN_GET_BASE_STAT,%0,%1)),|))
+&UFUN_ABILITIES_POINTS #dataman=u(UFUN_SECTION_POINTS,%0,ABILITIES)
+&UFUN_SECTION_POINTS #dataman=trim(iter(lattr(me/DATA_[%1]_POINTS_*),if(u(UFUN_SHEET_EXPR,%0,after(setr(1,v(##)),:)),before(%q1,:))))
+&UFUN_ATTRIBUTES_POINTS #dataman=u(UFUN_SECTION_POINTS,%0,ATTRIBUTES)
+&UFUN_FMT_SEARCH_MATCH #dataman=[u(UFUN_ENCODE_STAT,before(%0,:))]: [iter(after(%0,:),pcol(ulocal(UFUN_DECODE_STAT,##)),%b,\,%b)]
+&UFUN_EXPLAIN_SHEETOP_NOTIN #dataman=%0 is not one of [itemize(%1,|,or)]
+&UFUN_EXPLAIN_SHEETOP_IN #dataman=%0 is one of [itemize(%1,|,or)]
+&UFUN_EXPLAIN_SHEETOP_IS #dataman=%0 is exactly '%1'
+&UFUN_EXPLAIN_SHEETOP_ISNT #dataman=%0 is anything but '%1'
+&UFUN_EXPLAIN_SHEETOP_MATCHES #dataman=%0 contains the text '%1'
+&UFUN_EXPLAIN_SHEETOP_BEQ #dataman=Base %0 equals %1
+&UFUN_EXPLAIN_SHEETOP_EEQ #dataman=Effective %0 equals %1
+&UFUN_EXPLAIN_SHEETOP_BNEQ #dataman=Base %0 is not equal %1
+&UFUN_EXPLAIN_SHEETOP_ENEQ #dataman=Effective %0 is not equal %1
+&UFUN_EXPLAIN_SHEETOP_BGT #dataman=Base %0 is greater than %1
+&UFUN_EXPLAIN_SHEETOP_EGT #dataman=Effective %0 is greater than %1
+&UFUN_EXPLAIN_SHEETOP_BGTE #dataman=Base %0 is greater than or equal to %1
+&UFUN_EXPLAIN_SHEETOP_EGTE #dataman=Effective %0 is greater than or equal to %1
+&UFUN_EXPLAIN_SHEETOP_BLT #dataman=Base %0 is less than %1
+&UFUN_EXPLAIN_SHEETOP_ELT #dataman=Effective %0 is less than %1
+&UFUN_EXPLAIN_SHEETOP_BLTE #dataman=Base %0 is less than or equal to %1
+&UFUN_EXPLAIN_SHEETOP_ELTE #dataman=Effective %0 is less than or equal to %1
+&UFUN_EXPLAIN_SHEETOP #dataman=localize(if(hasattrp(me,UFUN_EXPLAIN_SHEETOP_[setr(1,extract(%0,2,1,@))]),u(UFUN_EXPLAIN_SHEETOP_%q1,u(UFUN_DECODE_STAT,first(%0,@)),last(%0,@)),NO EXPLAINER FOR %q1: SPONGE IS LAME))
+&UFUN_EXPLAIN_OPS #dataman=iter(%0,u(UFUN_EXPLAIN_SHEETOP,##),%1,|)
+&UFUN_EXPLAIN_SHEETEXPR #dataman=Sheet must match [if(strmatch(%0,*||*),ANY,ALL)] of the following criteria:!![u(UFUN_EXPLAIN_OPS,%0,if(strmatch(%0,*||*),||,&&))]
+&UFUN_TABLE_LISTING #dataman=[ljust(argcol(u(UFUN_DECODE_STAT,after(%0,DB_TABLE-))),15)] [pcol(strtrunc(get(get(#datacab/%0)/desc),64))]
+&UFUN_FMT_SCHEMA_FIELD #dataman=pcol(Name:) [ljust(argcol(u(UFUN_DECODE_STAT,after(%1,DATA_FIELD_))),12)] [pcol(Type:)] [ljust(argcol(extract(setr(0,get(%0/%1)),1,1,|)),10)] [pcol(Req'd:)] [argcol(extract(%q0,2,1,|))] [pcol(Default:)] [ljust(argcol(extract(%q0,3,1,|)),14)] [pcol(Edit?:)] [argcol(extract(%q0,4,1,|))]
+&UFUN_TABLE_NEWID #dataman=localize(if(get(%0/%1_[setr(0,rjust(rand(1000000),6,0))]),u(UFUN_TABLE_NEWID,%0,%1),%q0))
+&UFUN_VCHECK #dataman=localize([setq(0,u(UFUN_GET_BASE_STAT,%0,after(%1,DATA_VALUES_)))]switch(setr(1,get(#cgcheck/%1)),*/*,t(member(%q1,%q0,/)),*-*,candbool(gte(%q0,before(%q1,-)),lte(%q0,after(%q1,-))),eq(%q0,%q1)))
+&UFUN_VALID_STAT_TYPE #dataman=t(member(u(UFUN_STAT_TYPES),ucstr(%0)))
+&UFUN_STAT_IS_SHARDED_TYPE #dataman=t(member(get(#statidx/LIST_SHARDED_SECTIONS),ucstr(%0)))
+&UFUN_STAT_SEARCH_MATCH #dataman=sort(if(u(UFUN_STAT_IS_SHARDED_TYPE,%0),iter(lattr(#statidx/INDX_SECTION_?_%0),graball(get(#statidx/##),*%1*)),graball(get(#statidx/INDX_SECTION_%0),*%1*)))
+&UFUN_STAT_INITIALS #dataman=[lnum(0,9)] [iter(lnum(65,90),chr(##))]
+&UFUN_MATCH_STATS_INDEX #dataman=iter(u(#wod20=/%0),u(#14/UFUN_ENCODE_STAT,##),|,%b)
+&UFUN_WHICH_TABLE #dataman=get(#datacab/DB_TABLE-[u(UFUN_ENCODE_STAT,%0)])
+&UFUN_VALIDATE_PLAYER #dataman=whois(%0)
+&UFUN_VALIDATE_TEXT #dataman=%0
+&UFUN_VALIDATE_NUMBER #dataman=if(isnum(%0),%0)
+
+&LIST_SECTIONS #dataman=Vitals/36 Attributes/22 Abilities/22 Powers/22 Advantages/22 Pools/22 Misc/22
+&LIST_IGNORE_STATTYPES #dataman=TALENTS SKILLS KNOWLEDGES
+
+&DATA_ABILITIES_POINTS_SUPER #dataman=13/9/5:Race@notin@Mortal|Mortal+
+&DATA_ABILITIES_POINTS_MORTAL #dataman=11/7/5:Race@in@Mortal|Mortal+
+&DATA_ATTRIBUTES_POINTS_MORTAL #dataman=6/4/3:Race@in@Mortal|Mortal+
+&DATA_ATTRIBUTES_POINTS_SUPER #dataman=7/5/3:Race@notin@Mortal|Mortal+
+
+@@ now #statidx
+@@ &DB_IDX #dataman=#2203
+
+@@ now #datacab
+@@ &DB_DB #dataman=#7981
+
+@@ now #cgcheck
+@@ &DB_CHECK #dataman=#8062
+
+&DB_OOC_NEXUS #dataman=#36
+&DB_THE_FRIDGE #dataman=#1325
+
+&DATA_TIME_AWAY #dataman=7776000
+&DATA_ITEMDB #dataman=#-2
+&DATA_ROOMINV #dataman=#-2
+&DATA_DB_STORAGE #dataman=#59
+
+&META_STAT_TYPE #dataman=Determines what type a stat is by looking for it in the indexes. It takes the encoded stat name and returns the type, or nothing if it's not found.
+
+@Startup #dataman=@drain me;@notify me;@dolist/inline lattr(me/SEM_*)=@set me=%d0:-1
