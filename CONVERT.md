@@ -25,6 +25,8 @@ Find a command?
 ```
 @tag/add stor=#32
 @tag/add cron=#7561
+@tag/add wod20=#465
+@tag/add cgstatdb=#466
 @tag/add dataman=#14
 @tag/add datacab=#7981
 @tag/add cgcheck=#8062
