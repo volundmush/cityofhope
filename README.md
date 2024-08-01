@@ -1,10 +1,10 @@
 # Conversion from TinyMUX to RhostMUSH
 City of Hope, a classic World of Darkness game, was released to the public some time ago. However, its database is circa 2013, and is based on TinyMUX 2.9+
 
-This guide will walk you through getting it working on RhostMUSH with some modernizing and added qol/missing data in a jiffy.
+This guide will walk you through getting it working on [RhostMUSH](https://github.com/RhostMUSH/trunk) with some modernizing and added qol/missing data in a jiffy.
 
 ## Step 1: Install RhostMUSH
-This readme assumes you at least know the basics of what you're doing by installing softcode and running a game, have a host, know how to get the game running and back it up, edit its files, etc. If you don't, I'd suggest checking out these fine people over at the Rhost Dev server, rhostdev.mushpark.com 4201, or their [Discord](https://discord.gg/RxxtfVRYA4) - most coders there could easily get you going in a flash.
+This readme assumes you at least know the basics of what you're doing by installing softcode and running a game, have a host, know how to get the game running and back it up, edit its files, etc. If you don't, I'd suggest checking out these fine people over at the Rhost Dev server, `rhostdev.mushpark.com 4201`, or their [Discord](https://discord.gg/RxxtfVRYA4) - most coders there could easily get you going in a flash.
 
 You should refer to the [official Rhost installation guide](https://github.com/RhostMUSH/trunk/wiki/Installation) while following these instructions. I can't write instructions that cover every key-press and command.
 
