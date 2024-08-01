@@ -108,10 +108,6 @@ Get latest BBS from [here](https://bitbucket.org/myrddin0/myrddins-mush-code/src
 ```
 Run the install script after ensuring those attributes are set.
 
-```
-@set #52=CMD_+BBHELP:
-```
-
 The 5.0 help has already been integrated into `plushelp.txt` but you may need to adjust it if there's a newer BBS out.
 
 ## Step 9: Install Help System.
@@ -123,3 +119,9 @@ In your `rhost/Server/game` directory, type:
 `./Startmush -i`
 
 This will reindex all the helpfiles.
+
+## Step 11: Apply Patches
+Paste in the contents of `Code Patches.txt` to the game to fix a bunch of bugs caused by the new code engine.
+
+## Step 12: Apply WoD Data
+Paste in the contents of `WoD Data.txt` to the game to add missing stats, merits, categories, etc.
