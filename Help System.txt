@@ -1,6 +1,6 @@
 @skip isdbref(tag(setr(1,ohelp)))={@assert/inline isdbref(globalroom())=@pemit %#=ERROR: No global room set!;@assert/inline isdbref(setr(0,create(Old Help System,,t)))=@pemit %#=ERROR: Could not create code object %q1: %q0;@set %q0=INDESTRUCTIBLE !NO_COMMAND;@tag/add %q1=%q0;@tel %q0=[globalroom()]}
 
-&CMD.HELP #ohelp=$^(?s)(?\:\+)?(help|shelp|bhelp|chelp|jhelp|policy|rules|news|bbhelp)(?\:/(\\S+)?)?(?\: +(.+?))?$:@attach %!/START=%1,%2,%3
+&CMD.HELP #ohelp=$^(?s)(?\:\+)?(help|shelp|bhelp|chelp|jhelp|policy|rules|news)(?\:/(\\S+)?)?(?\: +(.+?))?$:@attach %!/START=%1,%2,%3
 @set #ohelp/CMD.HELP=regexp
 
 &INIT.HELP #ohelp=th setq(!,plushelp,file)
@@ -9,7 +9,7 @@
 &INIT.POLICY #ohelp=th setq(!,policy,file)
 &INIT.RULES #ohelp=th setq(!,rules,file)
 &INIT.NEWS #ohelp=th setq(!,news,file)
-&INIT.NEWS #ohelp=th setq(!,bbhelp,file)
+&INIT.JHELP #ohelp=th setq(!,jobshelp,file)
 &INIT.SHELP #ohelp=@assert/inline gtebittype(%#,4)=@pemit %#=error();th setq(!,staffhelp,file)
 
 &START #ohelp=@attach %!/INIT.%0;@attach %!/SW.[strfirstof(%q<switch>,MAIN)]=strfirstof(trim(%2),help)

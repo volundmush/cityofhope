@@ -1,0 +1,8 @@
+@@ Patch the staff detector.
+&FN_ISSTAFF #6=gte(bittype(%#),4)
+
+@@ Patching timefmt support.
+&UFUN_SUNRISESET #638=extract(v(DATA_SUNRISE_[timefmt($Y$m,secs())]),timefmt($d,secs()),1)
+&UFUN_LAST_MIDNIGHT #638=sub(setr(T,secs()),add(mul(timefmt($H,%qT),3600),mul(timefmt($M,%qT),60),timefmt($S,%qT)))
+
+&TRIG_SHOW_WHO_LINE #7=@if %0={@pemit %1=u(UFUN_FMT_WHO_LINE,first(%0),%1);@trigger me/TRIG_SHOW_WHO_LINE=rest(%0),%1},{@pemit %1=[u(v(db)/footer)]%R[ljust(There are [pcol(words(sortby(v(db)/cansee,lwho())))] players connected,39)] [rjust(timefmt($Y-$M-$D $H:$T:$S $P,secs()),38)]%R[u(v(db)/footer)]}

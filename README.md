@@ -99,7 +99,6 @@ Go to the master room via `@tel me=#2`
 
 Paste the remaining lines to patch it up.
 
-
 ## Step 8: Myrddin's BBS
 Get latest BBS from [here](https://bitbucket.org/myrddin0/myrddins-mush-code/src/master/)
 
@@ -109,7 +108,11 @@ Get latest BBS from [here](https://bitbucket.org/myrddin0/myrddins-mush-code/src
 ```
 Run the install script after ensuring those attributes are set.
 
-Don't forget to stick the .help file in your `rhost/Server/game/txt` directory as `bbhelp.txt` if it is newer than 5.0
+```
+@set #52=CMD_+BBHELP:
+```
+
+The 5.0 help has already been integrated into `plushelp.txt` but you may need to adjust it if there's a newer BBS out.
 
 ## Step 9: Install Help System.
 Paste in `Help System.txt`'s contents to install support for the +help, +jhelp etc
