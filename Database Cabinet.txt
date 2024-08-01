@@ -1,8 +1,0 @@
-@skip isdbref(tag(setr(1,datacab)))={@assert/inline isdbref(tag(stor))=@pemit %#=ERROR: No storage object installed!;@assert/inline isdbref(setr(0,create(Database Cabinet,,t)))=@pemit %#=ERROR: Could not create code object: %q0;@set %q0=INDESTRUCTIBLE NO_COMMAND;@tag/add %q1=%q0;@tel %q1=#stor}
-
-&META_AUTHOR #datacab=Sponge/#4
-&META_PURPOSE #datacab=Contain tabular databases.
-&META_UPDATED_BY #datacab=Sponge/#4
-
-&DB_TABLE-ROTES #datacab=#8116
-&META_SCHEMA_FMT #datacab=Field Name|Type|Required|Default|Player Editable!!Field Name|Type|...
