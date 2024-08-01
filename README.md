@@ -50,6 +50,7 @@ lc_chk=`echo "$1"|tr '[:upper:]' '[:lower:]'`
 
 ## Step 2: Convert the Database
 `cd ~/rhost/Server/convert`
+
 `./doconvert.sh cityofhope.FLAT rhost.out`
 
 (version TinyMUX 2.9+, defaults Y for everything)
@@ -61,6 +62,7 @@ The converter will also create a file called `muxlocks.out`. Take note of this f
 ## Step 3: Load the Database
 
 `cd ~/rhost/Server/game`
+
 `./db_load data/netrhost.gdbm ~/rhost/Server/convert/rhost.out data/netrhost.db.new`
 
 ## Step 4: .conf files
