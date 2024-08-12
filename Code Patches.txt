@@ -1,8 +1,23 @@
-@@ Patch the staff detector.
-&FN_ISSTAFF #6=gte(bittype(%#),4)
+@@ Add formatting to the parent room
+@power/coun #454=FORMATTING
+
+@@ Patch the staff detectors.
+&FN_ISSTAFF #6=gte(bittype(%0),4)
+
+&FN_STAFFALL #2808=isstaff(%0)
+&FN_WIZONLY #2808=[gte(bittype(%0),5)]
+
+@@ Patching Unstarted character detection
+&UFUN_PLAYER_PRESERVE #4024=cor(hasflag(%0,CONNECTED),hasflag(%0,GOING),haspower(%0,guest),isstaff(%0),t(get(%0/_PRESERVE)),gt(get(%0/_VACATION_UNTIL),secs()))
 
 @@ Patching timefmt support.
 &UFUN_SUNRISESET #638=extract(v(DATA_SUNRISE_[timefmt($Y$m,secs())]),timefmt($d,secs()),1)
 &UFUN_LAST_MIDNIGHT #638=sub(setr(T,secs()),add(mul(timefmt($H,%qT),3600),mul(timefmt($M,%qT),60),timefmt($S,%qT)))
 
 &TRIG_SHOW_WHO_LINE #7=@if %0={@pemit %1=u(UFUN_FMT_WHO_LINE,first(%0),%1);@trigger me/TRIG_SHOW_WHO_LINE=rest(%0),%1},{@pemit %1=[u(v(db)/footer)]%R[ljust(There are [pcol(words(sortby(v(db)/cansee,lwho())))] players connected,39)] [rjust(timefmt($Y-$M-$D $H:$T:$S $P,secs()),38)]%R[u(v(db)/footer)]}
+
+@@ Patching display bugs.
+&UFUN_FMT_ABILITIES_COL #14=iter(u(UFUN_LIST_SUBSECTION,%1),if(%i0,u(UFUN_FMT_NUM_STAT,%0,%i0,2,23)),|,%R)
+
+&UFUN_FMT_ABILITIES #14=[iter(Talents Skills Knowledges,argcol(center(##,25)))]%r[printf($-&25s $-&25s $-&25s,u(UFUN_FMT_ABILITIES_COL,%0,talents),u(UFUN_FMT_ABILITIES_COL,%0,skills),u(UFUN_FMT_ABILITIES_COL,%0,knowledges))]
+&UFUN_FMT_ADVANTAGES #14=[iter(Backgrounds Merits Flaws,argcol(center(##,25)))]%r[printf($-&25s $-&25s $-&25s,u(UFUN_FMT_ABILITIES_COL,%0,backgrounds),u(UFUN_FMT_ABILITIES_COL,%0,merits),u(UFUN_FMT_ABILITIES_COL,%0,flaws))]

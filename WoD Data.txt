@@ -1,0 +1,7 @@
+&UFUN_BUILD_LIST #465=[setq(S,ucstr(%1))][setq(L,)][null(iter(iter(lattr(me/UFUN_BLIST_[%qS]_*),u(UFUN_CHECK_LIST,%0,after(##,UFUN_BLIST_[%qS]_))),setq(L,setunion(u(UFUN_BLIST_[%qS]_[##]),%qL,|))))][trim(%qL)]
+
+&UFUN_CHECK_LIST #465=if(not(fold(#452/UFUN_ADD,iter(%1,not(strmatch(edit(after(##,-),.,\ ),u(#14/UFUN_DBGET,%0,DATA_[edit(before(##,-),.,\ )]))),_))),%1)
+
+&UFUN_DBGET #14=if(u(UFUN_VALID_DBID,%0),get(%qD/%1))
+
+&UFUN_VALID_DBID #14=and(t(setr(D,get(%0/_DATA_DBID))),strmatch(owner(%0/_DATA_DBID),owner(me)),strmatch(get(%qD/DATA_OWNER),%0))

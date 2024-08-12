@@ -1,0 +1,7 @@
+@@ This file contains patches and enhancements for if you're working with my codesuite.
+
+@@ Lock system adapter.
+@@ Example usage: @chan/lock Sabbat=LK.WODFACTION/SABBAT
+
+&GPFN.WODFACTION #gfun=u(#2579/UFUN_PASSES_LOCK,%0,%1)
+&LK.WODFACTION #globobj=if(wodfaction(%#,%1),%1,#-1)
